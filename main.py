@@ -6,8 +6,7 @@ import shutil
 import os
 from bs4 import BeautifulSoup
 
-# Set number of threads
-NUM_THREADS = 8
+NUM_THREAD = 32
 
 def get_cat():
     url = 'http://burst.shopify.com/free-images'
@@ -47,21 +46,24 @@ def get_imgs_of_cat(cat):
     # Get number of pages:
     req = requests.get(img_url)
     parse_html = BeautifulSoup(req.text, 'lxml')
-    pages = int(parse_html.find('span', class_='last').a['href'].split('=')[-1])
-    imgs = []
-    for p in range(1, pages):
-        if (p > 1):
-            url = img_url + '?page=' + str(p)
-            req = requests.get(url)
-            parse_html = BeautifulSoup(req.text, 'lxml')
+    try:
+        pages = int(parse_html.find('span', class_='last').a['href'].split('=')[-1])
+        imgs = []
+        for p in range(1, pages):
+            if (p > 1):
+                url = img_url + '?page=' + str(p)
+                req = requests.get(url)
+                parse_html = BeautifulSoup(req.text, 'lxml')
 
-        img_el = parse_html.find_all('a', class_='photo-tile__image-wrapper')
-        for el in img_el:
-            try:
-                img_link = el.img['data-srcset'].split(',')[0].split('_')[0] + '_4460x4460.jpg'
-                imgs.append(img_link)
-            except:
-                pass
+            img_el = parse_html.find_all('a', class_='photo-tile__image-wrapper')
+            for el in img_el:
+                try:
+                    img_link = el.img['data-srcset'].split(',')[0].split('_')[0] + '_4460x4460.jpg'
+                    imgs.append(img_link)
+                except:
+                    pass
+    except:
+        pass
     return imgs
 
 
